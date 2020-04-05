@@ -13,6 +13,74 @@ enum Type {
   EOF_Type
 };
 
+bool is_alpha(char ch) {
+  short s = (short)ch;
+  bool valid = false;
+
+  // capital
+  valid ^= (s > 64 && s < 91);
+  // character
+  valid ^= (s > 96 && s < 123);
+
+  return valid;
+}
+
+bool is_number(char ch) {
+  short s = (short)ch;
+  bool valid = false;
+
+  // number
+  valid ^= (s > 47 && s < 58);
+
+  return valid;
+}
+
+bool is_valid_word(char ch) {
+  short s = (short)ch;
+  bool valid = false;
+  // number
+  valid ^= (s > 47 && s < 58);
+  // capital
+  valid ^= (s > 64 && s < 91);
+  // character
+  valid ^= (s > 96 && s < 123);
+  // dot
+  valid ^= (s == 46);
+  //
+  valid ^= (s == 95);
+
+  return valid;
+}
+
+bool is_blank(char ch) { return (ch == ' ' || ch == '\t' || ch == 10); }
+
+bool is_digit_component(char ch) {
+  bool valid = false;
+  // number
+  valid ^= (ch > 47 && ch < 58);
+  // dot
+  valid ^= (ch == 46);
+
+  return valid;
+}
+
+char *strip_blank(char *buf, int head, int end) {
+  int len = end - head;
+  char *tmp = new char[256];
+  int counter = 0;
+
+  tmp[len] = '\0';
+  for (; head < end; head++) {
+    if (!is_blank(buf[head])) {
+      tmp[counter] = buf[head];
+      counter++;
+    }
+  }
+
+  //printf("%s\n", tmp);
+  return tmp;
+}
+
 class Token {
 public:
   Type t;
@@ -144,67 +212,15 @@ public:
   }
 };
 
-bool is_alpha(char ch) {
-  short s = (short)ch;
-  bool valid = false;
-  
-  // capital
-  valid ^= (s > 64 && s < 91);
-  // character 
-  valid ^= (s > 96 && s < 123);
-  
-  return valid;
-}
-
-bool is_number(char ch) {
-  short s = (short)ch;
-  bool valid = false;
-  
-  // number
-  valid ^= (s > 47 && s < 58);
-  
-  return valid;
-}
-
-bool is_valid_word(char ch) {
-  short s = (short)ch;
-  bool valid = false;
-  // number
-  valid ^= (s > 47 && s < 58);
-  // capital
-  valid ^= (s > 64 && s < 91);
-  // character 
-  valid ^= (s > 96 && s < 123);
-  // dot
-  valid ^= (s == 46);
-
-  return valid;
-}
-
-bool is_blank(char ch){
-  return (ch == ' ' || ch == '\t' || ch == 10);
-}
-
-bool is_digit_component(char ch){
-  bool valid = false;
-  // number
-  valid ^= (ch > 47 && ch < 58);
-  // dot
-  valid ^= (ch == 46);
-
-  return valid;
-}
-
 class TokenStream {
 public:
   int cursor;
   char *buf;
 
   TokenStream(char *filename) {
-
     cursor = 0;
     buf = new char[4096];
-    std::ifstream ifs("./textbook.cpp", std::ifstream::in);
+    std::ifstream ifs(filename, std::ifstream::in);
 
     ifs.read(buf, 4096);
     if (!ifs.eof()) {
@@ -234,7 +250,7 @@ public:
     return token;
   }
 
-  Token* deal_number(){
+  Token *deal_number() {
     char word[256];
     int counter = 1;
     int status = 2;
@@ -242,43 +258,37 @@ public:
     word[0] = buf[cursor];
     cursor++;
 
-    while(status != 5){
-      if(!is_digit_component(buf[cursor])){
+    while (status != 5) {
+      if (!is_digit_component(buf[cursor])) {
         status = 5;
-      }
-      else{
-        if(status == 2){
-          if(buf[cursor] == '.'){
+      } else {
+        if (status == 2) {
+          if (buf[cursor] == '.') {
             status = 3;
             word[counter] = buf[cursor];
             counter++;
             cursor++;
-          }
-          else{
+          } else {
             word[counter] = buf[cursor];
             counter++;
             cursor++;
           }
-        }
-        else if(status == 3){
-          if(buf[cursor] == '.'){
+        } else if (status == 3) {
+          if (buf[cursor] == '.') {
             printf("ERROR, invalid float number format");
             exit(1);
-          }
-          else{
+          } else {
             status = 4;
             word[counter] = buf[cursor];
             counter++;
             cursor++;
           }
-        }
-        else if(status == 4){
-          if(is_number(buf[cursor])){
+        } else if (status == 4) {
+          if (is_number(buf[cursor])) {
             word[counter] = buf[cursor];
             counter++;
             cursor++;
-          }
-          else{
+          } else {
             status = 5;
           }
         }
@@ -481,6 +491,24 @@ public:
 
       return new Token(Type::SPECIAL_SYMBOL, tmp, t_cur + 1);
     }
+    case '=': {
+      char *tmp = new char[3];
+      int t_cur = 1;
+
+      tmp[0] = buf[cursor];
+      cursor++;
+
+      if (buf[cursor] == '=') {
+        tmp[t_cur] = buf[cursor];
+        t_cur++;
+        cursor++;
+        break;
+      }
+
+      tmp[t_cur] = '\0';
+
+      return new Token(Type::SPECIAL_SYMBOL, tmp, t_cur + 1);
+    }
     case '"': {
       char *tmp = new char[256];
       size_t t_cur = 0;
@@ -497,6 +525,7 @@ public:
     }
       // single symbol
     case '#':
+    case ',':
     case ';':
     case '(':
     case ')':
@@ -520,36 +549,72 @@ public:
   }
 
   Token *get_token() {
-    while(is_blank(buf[cursor])) {
+    while (is_blank(buf[cursor])) {
       // just skip it, it already used as delimter
       cursor++;
-    } 
+    }
     if (buf[cursor] == 0) {
       return Token::get_eof();
     } else if (is_alpha(buf[cursor])) {
       // use the way to deal with word
       return deal_word();
-    } else if(is_number(buf[cursor])){
+    } else if (is_number(buf[cursor])) {
       return deal_number();
-    }
-    else {
+    } else {
       // it is symbol
       return deal_symbol();
     }
 
     exit(1);
   }
+
+  char *strip(char *filename) {
+    Token *token = NULL;
+    int head = 0;
+    char *buffer = new char[4096];
+    int buffer_cur = 0;
+    Token* last = NULL;
+
+    while (!(token = this->get_token())->is_eof()) {
+      if (token->t == Type::COMMENT) {
+        continue;
+      } else {
+        char *stripped = strip_blank(buf, head, cursor);
+        if(last != NULL && last->t == Type::IDENTIFIER && token->t == IDENTIFIER){
+            buffer[buffer_cur] = ' ';
+            buffer_cur++;
+        }
+        memcpy(buffer + buffer_cur, stripped, cursor - head);
+        buffer_cur += (cursor - head);
+      }
+
+      head = cursor;
+      last = token;
+    }
+
+    buffer[buffer_cur] = '\0';
+
+    return buffer;
+  }
 };
 
-int main(int argc, char** argv) {
-  if(argc != 2){
+int main(int argc, char **argv) {
+
+  if (argc == 2) {
+    TokenStream tokenStream(argv[1]);
+    Token *token;
+    while (!(token = tokenStream.get_token())->is_eof()) {
+      token->print();
+    }
+  } else {
     printf("Please use the format: ./a.out <filename>");
     exit(1);
   }
-  TokenStream tokenStream(argv[1]);
-  Token *token;
-  while (!(token = tokenStream.get_token())->is_eof()) {
-    token->print();
-  }
+
+  //TokenStream tokenStream("./textbook.cpp");
+  //char *s = tokenStream.strip("./target.cpp");
+
+  //printf("%s", s);
+
   return 0;
 }
