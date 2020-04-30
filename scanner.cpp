@@ -77,7 +77,7 @@ char *strip_blank(char *buf, int head, int end) {
     }
   }
 
-  //printf("%s\n", tmp);
+  // printf("%s\n", tmp);
   return tmp;
 }
 
@@ -573,16 +573,17 @@ public:
     int head = 0;
     char *buffer = new char[4096];
     int buffer_cur = 0;
-    Token* last = NULL;
+    Token *last = NULL;
 
     while (!(token = this->get_token())->is_eof()) {
       if (token->t == Type::COMMENT) {
         continue;
       } else {
         char *stripped = strip_blank(buf, head, cursor);
-        if(last != NULL && last->t == Type::IDENTIFIER && token->t == IDENTIFIER){
-            buffer[buffer_cur] = ' ';
-            buffer_cur++;
+        if (last != NULL && last->t == Type::IDENTIFIER &&
+            token->t == IDENTIFIER) {
+          buffer[buffer_cur] = ' ';
+          buffer_cur++;
         }
         memcpy(buffer + buffer_cur, stripped, cursor - head);
         buffer_cur += (cursor - head);
@@ -611,10 +612,10 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  //TokenStream tokenStream("./textbook.cpp");
-  //char *s = tokenStream.strip("./target.cpp");
+  // TokenStream tokenStream("./textbook.cpp");
+  // char *s = tokenStream.strip("./target.cpp");
 
-  //printf("%s", s);
+  // printf("%s", s);
 
   return 0;
 }

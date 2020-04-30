@@ -1,3 +1,7 @@
-**/a.out
+**/*.out
 **/a.out.dSYM
 **/.DS_Store
+**/.vscode/
+**/*.o
+**/*.gch
+**/gdb.txt
