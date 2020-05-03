@@ -2,6 +2,7 @@
 #define __graph
 
 #include<iostream>
+#include<set>
 /*
  * Convention:
  *  Edge:
@@ -10,6 +11,18 @@
  *      * means closure
  * 
  */
+
+
+
+class Pair{
+public:
+	int src_num;
+	int dest_num;
+
+	Pair(int src, int dest): src_num(src), dest_num(dest){};
+	void print(){printf("S0 is %d, AC is %d\n", src_num, dest_num);}
+};
+
 
 class Edge {
 public:
@@ -33,6 +46,7 @@ public:
 
     void insert_edge(char s, int dest);
     Edge* transit(char* ch, size_t* i);
+    int transit_new(char ch);               // transit ch directly
     void print_vertex();
 };
 
@@ -41,6 +55,8 @@ class Graph {
 public:
     Vertex* starter_vertex;
     Vertex* last_vertex;
+    int s0;
+    int s_accept;
 
     Graph() {
         last_vertex = starter_vertex = new Vertex();
@@ -51,6 +67,10 @@ public:
     Vertex* get_vertex_by_number(int num);
     void walk_str(int init, char* ch);
     void print_graph();
+    void set_s0_accept(Pair* p);
+    void set_s0_accept(int start, int final);
+    std::set<int> probe_epsilon(Vertex* v);
+    void get_transition_table();
 };
 
 #endif
