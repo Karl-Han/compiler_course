@@ -71,13 +71,18 @@ void vector_insert(){
     st.insert(st.begin(), S(s));
     printf("st is empty : %d", st.empty());
 }
-
-int main()
-{
+void empty_or_nonexist_set(){
     std::set<int> s;
     s.insert(1);
     s.erase(2);
     printf("---");
     s.erase(s.end());
+}
+
+int main()
+{
+    char buf[256];
+    std::cin>>buf;
+    std::cout<<buf;
     return 0;
 }
