@@ -1,12 +1,12 @@
 debug: test_syntax
-	lldb syntax_main.out
+	lldb main
 
 run: test_syntax
-	./syntax_main.out
+	./main
 
 test_syntax: syntax libfort
 	g++ -c -g -std=c++11 test_syntax.cpp
-	g++ -std=c++11 -o syntax_main.out test_syntax.o syntax.o lib/fort.c graph.o 
+	g++ -std=c++11 -o main test_syntax.o syntax.o lib/fort.c graph.o 
 
 syntax: graph 
 	g++ -c -g -std=c++11 syntax.cpp

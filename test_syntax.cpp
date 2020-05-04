@@ -45,7 +45,7 @@ std::string generate_code(GlobalState *gs)
 {
     std::string content;
     std::string header = "#include <cstring>\n#include <iostream>\nint main(){\n";
-    std::string footer = "return 0;\n}";
+    std::string footer = "\treturn 0;\n}";
     int s_accept[256];
     int counter = 0;
     memset(s_accept, 0, sizeof(int));
@@ -56,7 +56,7 @@ std::string generate_code(GlobalState *gs)
     content_stringstream << "char buf[256];\nstd::cin>>buf;\nint cursor = 0;\n";
     content_stringstream << "\twhile(buf[cursor] != \'\\0\'){\n";
 
-    content_stringstream << "switch(status){\n";
+    content_stringstream << "\t\tswitch(status){\n";
     for (auto sr : gs->st_minDFA)
     {
         std::ostringstream sstream_sr;
@@ -66,61 +66,61 @@ std::string generate_code(GlobalState *gs)
             counter++;
         }
         
-        sstream_sr << "\tcase " << sr.number << ":{\n";
+        sstream_sr << "\t\t\tcase " << sr.number << ":{\n";
 
-        sstream_sr << "\tswitch(buf[cursor]){\n";
+        sstream_sr << "\t\t\t\tswitch(buf[cursor]){\n";
 
         for (auto sym : gs->sym_table)
         {
             std::ostringstream sstream_sym;
-            sstream_sym << "\t\tcase "
+            sstream_sym << "\t\t\t\t\tcase "
                         << "'" << sym << "':{\n";
             int dest = *(sr.transit_table[sym].begin());
             if (dest == 0)
             {
-                sstream_sym << "printf(\"No such transition from %d by %c\","
-                            << sr.number << ", buf[cursor]);\nexit(1);\n";
+                sstream_sym << "\t\t\t\t\t\tprintf(\"No such transition from %d by %c\","
+                            << sr.number << ", buf[cursor]);\n\t\t\t\t\t\texit(1);\n";
             }
             else
             {
-                sstream_sym << "cursor++;\nstatus = " << dest << ";\n";
+                sstream_sym << "\t\t\t\t\t\tcursor++;\n\t\t\t\t\tstatus = " << dest << ";\n";
             }
 
             // symbol transit switch end
-            sstream_sym << "break;\n}\n";
+            sstream_sym << "\t\t\t\t\tbreak;}\n";
             sstream_sr << sstream_sym.str();
         }
 
-        sstream_sr<<"default:\nprintf(\"No such symbol %c\", buf[cursor]);\nexit(1);";
+        sstream_sr<<"\t\t\t\t\tdefault:\n\t\t\t\t\t\tprintf(\"No such symbol %c\", buf[cursor]);\n\t\t\t\t\t\texit(1);\n";
 
         // status row switch end
-        sstream_sr << "break;\n}\n";
+        sstream_sr << "\t\t\t\t\tbreak;}\n";
         // case end
-        sstream_sr << "break;\n}\n";
+        sstream_sr << "\t\t\tbreak;}\n";
 
         content_stringstream << sstream_sr.str();
     }
 
     // switch
-    content_stringstream << "break;\n}\n";
+    content_stringstream << "\t\tbreak;}\n";
     // while
-    content_stringstream << "}\n";
+    content_stringstream << "\t\t}\n";
 
     if (counter == 0)
     {
-        content_stringstream << "printf(\"No accept status.\");";
+        content_stringstream << "\tprintf(\"No accept status.\");";
     }
 
     else
     {
-        content_stringstream << "if(status != "<<s_accept[0];
+        content_stringstream << "\tif(status != "<<s_accept[0];
         for (size_t i = 1; i < counter; i++)
         {
             content_stringstream<<"&& status != "<<s_accept[i];
         }
-        content_stringstream << ")";
-        content_stringstream << "\tprintf(\"Failed to accept, NOT match\");\n";
-        content_stringstream << "else\n\tprintf(\"Program match %s\", buf);\n";
+        content_stringstream << ")\n";
+        content_stringstream << "\t\tprintf(\"Failed to accept, NOT match\");\n";
+        content_stringstream << "\telse\n\t\tprintf(\"Program match %s\", buf);\n";
     }
 
     content = header + content_stringstream.str() + footer;
@@ -128,54 +128,63 @@ std::string generate_code(GlobalState *gs)
     return content;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    // test construction of NFA
-    // char* str = "";
-    // char* str = "a";
-    // char* str = "a-b";
-    // char* str = "a-b|c";
-    // char* str = "a-b*|c-d";
-    // char* str = "a-(b|c)-d*";
-
-    // GlobalState* gs = new GlobalState(str);
-    // Graph* g = new Graph();
-
-    // // Pair* p = entry_match(g, gs);
-    // Pair* p = entry_match(g, gs);
-    // p->print();
-    // g->set_s0_accept(p);
-    // g->print_graph();
-    // g->walk_str(p->src_num, "abbbbbbb");
-
-    // printf("SUCCESS");
-
-    // test print set
-    // std::set<int>* s = new std::set<int>();
-    // int arr[5] = {5, 4, 2, 3, 1};
-    // s->insert(std::begin(arr), std::end(arr));
-    // std::cout<<set_to_string(s);
-
-    // char* str = "";
-    // char* str = "a";
-    // char* str = "a-b";
-    // char *str = "a-b|c";
-    // char* str = "a*";
-    // char* str = "a-b*|c-d";
-    char* str = "a-(b|c)-d*";
+    char* str;
+    // printf("argc = %d\n", argc);
+    if (argc == 1)
+    {
+        // str = "";
+        // str = "a";
+        // str = "a-b";
+        str = "a-b|c";
+        // str = "a*";
+        // str = "a-b*|c-d";
+        // str = "a-(b|c)-d*";
+    }
+    else if (argc == 2)
+    {
+        if (strcmp(argv[1], "help") == 0)
+        {
+            printf("main [OP] [REG]\nDefault REG is a-b|c.\nSupport - for concatenation, | for or operation, * for closure operation.\nGenerated code is in gen_code.cpp\n");
+            printf("Examples:\n\tmain \"a-b|c\"\n\tmain file reg.txt");
+            return 0;
+        }
+        
+        str = argv[1];
+        printf("%s\n", str);
+    }
+    else{
+        if (argc == 3)
+        {
+            if (strcmp(argv[1], "file") == 0)
+            {
+                std::ifstream f(argv[2]);
+                if (!f.is_open())
+                {
+                    printf("ERROR occur when opening file %s", argv[2]);
+                    exit(1);
+                }
+                
+                std::string s;
+                std::getline(f, s);
+                str = new char[s.length() +1];
+                strcpy(str, s.c_str());
+            }
+        }
+        else{
+            printf("main [OP] [REG]\nDefault REG is a-b|c.\nSupport - for concatenation, | for or operation, * for closure operation.\nGenerated code is in gen_code.cpp\n");
+            printf("Examples:\n\tmain \"a-b|c\"\n\tmain file reg.txt\t----read regex from reg.txt");
+            return 0;
+        }
+    }
+    
+    
     GlobalState *gs = new GlobalState(str);
     Graph *g = new Graph();
 
-    // Pair* p = entry_match(g, gs);
     Pair *p = gs->entry_match(g);
-    printf("----p->print-----\n");
-    p->print();
-    printf("----g->set_s0_accept-----\n");
     g->set_s0_accept(p);
-    printf("----g->print_graph-----\n");
-    g->print_graph();
-    // printf("----g->walk_str-----\n");
-    // g->walk_str(p->src_num, "a-b");
 
     gs->get_sym_table(g);
     gs->get_transition_table(g);
@@ -189,7 +198,6 @@ int main()
 
     print_transition_table(gs->sym_table, gs->st_minDFA);
 
-    // std::cout<<generate_code(gs)<<std::endl;
     std::fstream f("gen_code.cpp", std::ios::trunc | std::ios::out);
     f << generate_code(gs);
     f.close();
