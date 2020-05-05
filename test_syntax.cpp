@@ -137,8 +137,8 @@ int main(int argc, char* argv[])
         // str = "";
         // str = "a";
         // str = "a-b";
-        str = "a-b|c";
-        // str = "a*";
+        // str = "a-b|c";
+        str = "a*";
         // str = "a-b*|c-d";
         // str = "a-(b|c)-d*";
     }

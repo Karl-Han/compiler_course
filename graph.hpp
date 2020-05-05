@@ -69,7 +69,7 @@ public:
     void print_graph();
     void set_s0_accept(Pair* p);
     void set_s0_accept(int start, int final);
-    std::set<int> probe_epsilon(Vertex* v);
+    std::set<int> probe_epsilon(Vertex* v, std::set<int>* s_probed);
     void get_transition_table();
 };
 

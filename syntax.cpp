@@ -67,6 +67,7 @@ Pair *GlobalState::star_match_op(Graph *g)
     {
         match('*');
         g->insert_edge(tmp_pair->dest_num, '~', tmp_pair->src_num);
+        g->insert_edge(tmp_pair->src_num, '~', tmp_pair->dest_num);
     }
 
     return new Pair(v1->vertex_number, v2->vertex_number);
@@ -147,26 +148,22 @@ bool GlobalState::match_char(char ch)
     return (ch == this->str[this->cursor]);
 }
 
+bool GlobalState::is_symbol(char ch){
+    if(ch == '-' || ch == '|' || ch == '*' || ch == '(' || ch == ')')
+    {
+        return false;
+    }
+    return true;
+}
+
 bool GlobalState::current_is_symbol()
 {
-    // for (size_t i = 0; i < this->sym_num; i++)
-    // {
-    // if (this->str[this->cursor] == this->sym_table[i])
-    // {
-    // return true;
-    // }
-    // }
-    // return false;
-    if (this->str[this->cursor] != '~')
-    {
-        return true;
-    }
-    return false;
+    return is_symbol(str[cursor]);
 }
 
 char GlobalState::get_symbol()
 {
-    return this->str[this->cursor];
+    return str[cursor];
 }
 
 void GlobalState::get_sym_table(Graph *g)
@@ -175,7 +172,7 @@ void GlobalState::get_sym_table(Graph *g)
 
     for (size_t i = 0; i < length; i++)
     {
-        if (str[i] == '-' || str[i] == '|' || str[i] == '*' || str[i] == '(' || str[i] == ')')
+        if (!is_symbol(str[i]))
         {
             // all these are special symbol
             continue;
@@ -187,7 +184,8 @@ void GlobalState::get_sym_table(Graph *g)
 
 void GlobalState::get_transition_table(Graph *g)
 {
-    std::set<int> s0 = g->probe_epsilon(g->get_vertex_by_number(g->s0));
+    std::set<int> s_probed_epsilon;
+    std::set<int> s0 = g->probe_epsilon(g->get_vertex_by_number(g->s0), &s_probed_epsilon);
     s.insert(s0);
     auto it = st.begin();
     st.insert(it, StatusRow(this->counter_st++, s0, g->s_accept));
@@ -222,7 +220,8 @@ void GlobalState::get_transition_table(Graph *g)
                 if (dst != 0)
                 {
                     // get all epsilon closure
-                    std::set<int> s_probe = g->probe_epsilon(g->get_vertex_by_number(dst));
+                    std::set<int> s_probed_epsilon_inner;
+                    std::set<int> s_probe = g->probe_epsilon(g->get_vertex_by_number(dst), &s_probed_epsilon_inner);
                     s_new.insert(s_probe.begin(), s_probe.end());
 
                     // find out if it is new status set
@@ -253,10 +252,10 @@ void GlobalState::get_transition_table(Graph *g)
         s_probed.insert(tmp_set);
         s_diff.clear();
         std::set_difference(s.begin(), s.end(), s_probed.begin(), s_probed.end(), std::inserter(s_diff, s_diff.begin()));
-        // for (auto i : s_diff)
-        // {
-        //     std::cout << set_to_string(&i);
-        // }
+        for (auto i : s_diff)
+        {
+            std::cout << set_to_string(&i);
+        }
         // counter++;
     }
 }

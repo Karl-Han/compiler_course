@@ -58,6 +58,7 @@ public:
     void get_symbol_table();
     bool match(char ch);
     bool match_char(char ch);
+    bool is_symbol(char ch);
     bool current_is_symbol();
     char get_symbol();
     Pair* braket_op(Graph* g);

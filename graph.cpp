@@ -165,7 +165,8 @@ void Graph::walk_str(int init_vertex, char *ch)
         // walk until it is accept
         v = get_vertex_by_number(num_vertex);
         printf("NOT accepted yet and in %d\n", num_vertex);
-        std::set<int> s = probe_epsilon(v);
+        std::set<int> s_probed;
+        std::set<int> s = probe_epsilon(v, &s_probed);
 
         auto search = s.find(s_accept);
 
@@ -221,10 +222,19 @@ void Graph::print_graph()
 }
 
 // all reachable from v by epsilon
-std::set<int> Graph::probe_epsilon(Vertex *v)
+std::set<int> Graph::probe_epsilon(Vertex *v, std::set<int>* s_probed)
 {
+    auto search = s_probed->find(v->vertex_number);
+    if (search != s_probed->end())
+    {
+        return std::set<int>();
+    }
+    
     Edge *tmp = v->edge_list;
     std::set<int> s;
+
+    s.insert(v->vertex_number);
+    s_probed->insert(v->vertex_number);
 
     // enumerate all with one epsilon
     while (tmp != nullptr)
@@ -238,11 +248,11 @@ std::set<int> Graph::probe_epsilon(Vertex *v)
 
     for (auto i = s.begin(); i != s.end(); i++)
     {
-        std::set<int> s_probe = probe_epsilon(get_vertex_by_number(*i));
+        std::set<int> s_probe = probe_epsilon(get_vertex_by_number(*i), s_probed);
 
         s.insert(s_probe.begin(), s_probe.end());
+        s_probed->insert(s_probe.begin(), s_probe.end());
     }
 
-    s.insert(v->vertex_number);
     return s;
 }
