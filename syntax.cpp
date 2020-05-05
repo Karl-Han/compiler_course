@@ -47,6 +47,7 @@ Pair *GlobalState::braket_op(Graph *g)
         ch = get_symbol();
         this->cursor++;
     }
+
     g->insert_edge(v1->vertex_number, ch, v2->vertex_number);
 
     return new Pair(v1->vertex_number, v2->vertex_number);
@@ -303,6 +304,11 @@ bool GlobalState::modify_sets(std::set<int> *s, int num, std::set<int> *s_belong
     for (auto s_num : *s_belong)
     {
         std::set<int> *s_tmp = new2set[s_num]; // get_set_by_set_number(old2new[s_num]);
+        if (s_tmp->size() == 1 || s_tmp->empty())
+        {
+            continue;
+        }
+        
         int i = *(s_tmp->begin());
         auto j = s_tmp->begin();
         j++;
@@ -512,7 +518,7 @@ void print_map(std::map<std::set<int>, int> m)
     for (auto i : m)
     {
         std::set<int> *j = new std::set<int>(i.first);
-        // printf("%s => %d\n", set_to_string(j).c_str(), i.second);
+        printf("%s => %d\n", set_to_string(j).c_str(), i.second);
     }
 }
 
@@ -522,6 +528,11 @@ void GlobalState::get_minDFA_SR()
     for (auto p = set_new_raw.begin(); p != set_new_raw.end(); p++)
     {
         int num_status_old = *(p->second->begin());
+        if (num_status_old == 0)
+        {
+            continue;
+        }
+        
         StatusRow *sr_old = num2sr[num_status_old];
         StatusRow tmp_sr(p->first, *(p->second), sr_old->is_accept);
 

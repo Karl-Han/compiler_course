@@ -6,4 +6,6 @@
 **/*.gch
 **/gdb.txt
 **/实验*
-**/gen_code.cpp
+**/gen_code*
+**/main
+feature_test.cpp

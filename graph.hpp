@@ -20,19 +20,20 @@ public:
 	int dest_num;
 
 	Pair(int src, int dest): src_num(src), dest_num(dest){};
+    // CHANGING to_string
 	void print(){printf("S0 is %d, AC is %d\n", src_num, dest_num);}
 };
 
 
 class Edge {
 public:
-    char terminal;         // accept terminal and transit
+    char terminal;          // accept terminal and transit
     int src_num;            // destination vertex number
     int dest_num;           // destination vertex number
     Edge* edge_next;        // next transitable edge
 
     Edge(): terminal('\0'), src_num(0),dest_num(0), edge_next(nullptr){};
-    Edge(char s, int src, int num, Edge* next): terminal(s),src_num(src), dest_num(num), edge_next(next){};
+    Edge(char s, int src, int dst, Edge* next): terminal(s),src_num(src), dest_num(dst), edge_next(next){};
 };
 
 class Vertex {

@@ -44,7 +44,7 @@ void print_transition_table(std::set<char> sym_table,
 std::string generate_code(GlobalState *gs)
 {
     std::string content;
-    std::string header = "#include <cstring>\n#include <iostream>\nint main(){\n";
+    std::string header = "// use ~ as epsilon\n#include <cstring>\n#include <iostream>\nint main(){\n";
     std::string footer = "\treturn 0;\n}";
     int s_accept[256];
     int counter = 0;
@@ -53,6 +53,7 @@ std::string generate_code(GlobalState *gs)
     std::ostringstream content_stringstream;
 
     content_stringstream << "int status = " << gs->old2new[1] << ";\n";
+    content_stringstream << "printf(\"Use ~ as empty string\\nEnter the string to identify: \");\n";
     content_stringstream << "char buf[256];\nstd::cin>>buf;\nint cursor = 0;\n";
     content_stringstream << "\twhile(buf[cursor] != \'\\0\'){\n";
 
@@ -90,6 +91,8 @@ std::string generate_code(GlobalState *gs)
             sstream_sym << "\t\t\t\t\tbreak;}\n";
             sstream_sr << sstream_sym.str();
         }
+        sstream_sr<<"\t\t\t\t\tcase '~':{\n\t\t\t\t\t\tbuf[cursor] = '\\0';\n";
+        sstream_sr<< "\t\t\t\t\tbreak;}\n";
 
         sstream_sr<<"\t\t\t\t\tdefault:\n\t\t\t\t\t\tprintf(\"No such symbol %c\", buf[cursor]);\n\t\t\t\t\t\texit(1);\n";
 
@@ -131,7 +134,6 @@ std::string generate_code(GlobalState *gs)
 int main(int argc, char* argv[])
 {
     char* str;
-    // printf("argc = %d\n", argc);
     if (argc == 1)
     {
         // str = "";
@@ -180,26 +182,32 @@ int main(int argc, char* argv[])
     }
     
     
+    // initialize
     GlobalState *gs = new GlobalState(str);
     Graph *g = new Graph();
 
+    // get NFA
     Pair *p = gs->entry_match(g);
     g->set_s0_accept(p);
-
     gs->get_sym_table(g);
+
+    // transform NFA to DFA
     gs->get_transition_table(g);
     std::cout << std::endl;
     print_transition_table(gs->sym_table, gs->st);
 
     gs->setup();
 
+    // transform DFA to minDFA
     gs->minimizeDFA();
     gs->get_minDFA_SR();
 
     print_transition_table(gs->sym_table, gs->st_minDFA);
 
+    // generate runnable identification code
     std::fstream f("gen_code.cpp", std::ios::trunc | std::ios::out);
     f << generate_code(gs);
     f.close();
+
     return 0;
 }
