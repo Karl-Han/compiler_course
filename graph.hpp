@@ -46,9 +46,11 @@ public:
     Vertex(int num): vertex_number(num), vertex_next(nullptr), edge_list(nullptr){};
 
     void insert_edge(char s, int dest);
-    Edge* transit(char* ch, size_t* i);
+    // CHANGE, I think transit is not necessary
+    Edge* transit(char* ch, size_t* i);     // transit ch directly and indirectly
     int transit_new(char ch);               // transit ch directly
-    void print_vertex();
+    // CHANGEW, I think print all edges could be delete
+    void print_all_edge();
 };
 
 // Graph is initialized with an vertex 0
@@ -62,6 +64,7 @@ public:
     Graph() {
         last_vertex = starter_vertex = new Vertex();
     }
+    // CHANGE: It seems that it is useless
     void insert_vertex(int num);
     void insert_vertex(Vertex* v);
     void insert_edge(int num, char ch, int dest);
@@ -69,9 +72,9 @@ public:
     void walk_str(int init, char* ch);
     void print_graph();
     void set_s0_accept(Pair* p);
+    // CHANGE: It seems that it is useless
     void set_s0_accept(int start, int final);
     std::set<int> probe_epsilon(Vertex* v, std::set<int>* s_probed);
-    void get_transition_table();
 };
 
 #endif

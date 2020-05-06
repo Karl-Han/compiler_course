@@ -140,8 +140,8 @@ int main(int argc, char* argv[])
         // str = "a";
         // str = "a-b";
         // str = "a-b|c";
-        str = "a*";
-        // str = "a-b*|c-d";
+        // str = "a*";
+        str = "a-b*|c-d";
         // str = "a-(b|c)-d*";
     }
     else if (argc == 2)
