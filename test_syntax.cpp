@@ -4,6 +4,25 @@
 #include <vector>
 #include <fstream>
 
+std::string set_to_string(std::set<int> *s)
+{
+    std::stringstream istream;
+    std::vector<int> v(s->begin(), s->end());
+    std::sort(v.begin(), v.end());
+
+    istream << "{";
+
+    for (auto i = v.begin(); i != v.end(); i++)
+    {
+        istream << *i << ",";
+    }
+
+    istream << "}";
+
+    return istream.str();
+}
+
+
 // `s` for all status sets, `m` for one status_set transition table
 void print_transition_table(std::set<char> sym_table,
                             std::vector<StatusRow> st)
@@ -131,9 +150,8 @@ std::string generate_code(GlobalState *gs)
     return content;
 }
 
-int main(int argc, char* argv[])
-{
-    char* str;
+std::string parse_args(int argc, char* argv[]){
+    std::string str;
     if (argc == 1)
     {
         // str = "";
@@ -150,11 +168,11 @@ int main(int argc, char* argv[])
         {
             printf("main [OP] [REG]\nDefault REG is a-b|c.\nSupport - for concatenation, | for or operation, * for closure operation.\nGenerated code is in gen_code.cpp\n");
             printf("Examples:\n\tmain \"a-b|c\"\n\tmain file reg.txt");
-            return 0;
+            exit(0);
         }
         
         str = argv[1];
-        printf("%s\n", str);
+        printf("%s\n", str.c_str());
     }
     else{
         if (argc == 3)
@@ -170,17 +188,21 @@ int main(int argc, char* argv[])
                 
                 std::string s;
                 std::getline(f, s);
-                str = new char[s.length() +1];
-                strcpy(str, s.c_str());
+                return s;
             }
         }
         else{
             printf("main [OP] [REG]\nDefault REG is a-b|c.\nSupport - for concatenation, | for or operation, * for closure operation.\nGenerated code is in gen_code.cpp\n");
             printf("Examples:\n\tmain \"a-b|c\"\n\tmain file reg.txt\t----read regex from reg.txt");
-            return 0;
+            exit(0);
         }
     }
+}
+
+int main(int argc, char* argv[])
+{
     
+    std::string str = parse_args(argc, argv);
     
     // initialize
     GlobalState *gs = new GlobalState(str);

@@ -11,6 +11,17 @@
 // std::set<int> reach_new_status(std::set<int>s, char ch);
 class GlobalState;
 
+class Table{
+    std::map<int, std::map<char, int> > oldS2newS;
+    std::map<int, std::set<int> > S2set;
+    std::map<int, bool> SisAC;
+
+public:
+    Table();
+    void init();                // init table
+    void parse_from_graph(Graph *g);
+};
+
 class StatusRow{
 public:
     int number;                 // used for next
@@ -30,6 +41,50 @@ public:
         }
     };
     void insert_map(char ch, std::set<int> tt);
+};
+
+class ParseReg{
+public:
+    int global_status;
+    char* str;
+    int cursor;
+    Pair* s0_sAC;
+    std::set<char> sym_table;
+    Graph *g;
+
+    ParseReg(std::string s, Graph* g): str(const_cast<char*>(s.c_str())), g(g){};
+
+    bool match(char ch);
+    bool match_char(char ch);
+    bool is_symbol(char ch);
+    bool current_is_symbol();
+    char get_symbol();
+    void get_sym_table();
+
+    Pair* braket_op();
+    Pair* star_match_op();
+    Pair* and_match_op();
+    Pair* or_match_op();
+    Pair* entry_match();
+};
+
+struct FA_info{
+public:
+    std::set<char> sym_table;
+    Pair s0_sAC;
+    Table t;
+};
+
+class NFA{
+public:
+    FA_info info;
+    NFA(ParseReg* pr);
+};
+
+class DFA {
+public:
+    FA_info info;
+    DFA(NFA nfa);
 };
 
 class GlobalState {
@@ -54,20 +109,7 @@ public:
     std::set<std::pair<int, std::set<int>* > > set_new_raw; // number of set of old status to new set
     std::vector<StatusRow> st_minDFA;
 
-    GlobalState(char* ch): global_status(1), str(ch), cursor(0), counter_st(1), status_minDFA(1) { st = std::vector<StatusRow>();};
-    void get_symbol_table();
-    bool match(char ch);
-    bool match_char(char ch);
-    bool is_symbol(char ch);
-    bool current_is_symbol();
-    char get_symbol();
-    Pair* braket_op(Graph* g);
-    Pair* star_match_op(Graph* g);
-    Pair* and_match_op(Graph* g);
-    Pair* or_match_op(Graph* g);
-    Pair* entry_match(Graph* g);
-
-    void get_sym_table(Graph* g);
+    GlobalState(std::string ch): global_status(1), str(const_cast<char *>(ch.c_str())), cursor(0), counter_st(1), status_minDFA(1) { st = std::vector<StatusRow>();};
     void get_transition_table(Graph* g);
     StatusRow* get_status_row_with_set(std::set<int> s);
 

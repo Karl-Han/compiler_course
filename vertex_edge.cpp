@@ -7,38 +7,6 @@ void Vertex::insert_edge(char s, int dest)
     this->edge_list = new_edge;
 }
 
-// incomplete, it did not consider all the branches
-Edge *Vertex::transit(char *ch, size_t *i)
-{
-    Edge *tmp = this->edge_list;
-    Edge *epsilon = nullptr;
-
-    // go through all the valid edge until match ch
-    while (tmp != nullptr && ch[*i] != tmp->terminal)
-    {
-        // this is incomplete because there is a lot of ~
-        if (tmp->terminal == '~')
-        {
-            epsilon = tmp;
-        }
-
-        tmp = tmp->edge_next;
-    }
-
-    if (tmp == nullptr && epsilon == 0)
-    {
-        printf("NO transit found for %d with %d", this->vertex_number, ch);
-        exit(1);
-    }
-    if (tmp == nullptr)
-    {
-        return epsilon;
-    }
-
-    (*i)++;
-    return tmp;
-}
-
 // transit from v with ch **directly**
 int Vertex::transit_new(char ch){
     Edge* tmp = this->edge_list;
